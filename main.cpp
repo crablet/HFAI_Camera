@@ -67,7 +67,7 @@ void FindWhiteLines(Mat &InputFrame)
     double NowX1 = .0, NowX2 = .0;
     double NowY1 = .0, NowY2 = .0;
 
-    // It is dangerous to vist a empty vector.
+    // It is dangerous to visit an empty vector.
     if (!WhiteLines.empty())
     {
         PreX1 = WhiteLines[0][0], PreX2 = WhiteLines[0][2];
