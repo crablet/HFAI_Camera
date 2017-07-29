@@ -15,6 +15,11 @@ int main()
         Mat Frame, HSVFrame;
         Capture >> Frame;
 
+        if (Frame.empty())
+        {
+            break;
+        }
+
         cvtColor(Frame, HSVFrame, COLOR_BGR2HSV);
 
         auto LowBlue = Scalar(100, 43, 46);
@@ -44,8 +49,9 @@ int main()
 
         imshow("Out", Result);
         imshow("In", Frame);
-        waitKey(30);
+        waitKey(5);
     }
+    waitKey(0);
     return 0;
 }
 
