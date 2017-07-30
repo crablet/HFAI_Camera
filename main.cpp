@@ -8,6 +8,7 @@ using namespace cv;
 inline void ClosingOperation(Mat &In, Mat &Out, const Mat &Element);
 inline void FindColor(Mat &In, Mat &Out, const Scalar &Low, const Scalar &High);
 void FindWhiteLines(Mat &InputFrame);
+inline void Initalize(Mat &Frame);
 
 int main()
 {
@@ -21,6 +22,8 @@ int main()
         {
             break;
         }
+
+        Initalize(Frame);
 
         // To find white lines.
         FindWhiteLines(Frame);
@@ -43,16 +46,19 @@ inline void FindColor(Mat &In, Mat &Out, const Scalar &Low, const Scalar &High)
     inRange(In, Low, High, Out);
 }
 
+inline void Initalize(Mat &Frame)
+{
+    cvtColor(Frame, Frame, COLOR_BGR2HSV);
+}
+
 void FindWhiteLines(Mat &InputFrame)
 {
-    Mat HSVFrame;
-    cvtColor(InputFrame, HSVFrame, COLOR_BGR2HSV);
     const auto LowWhite = Scalar(0, 0, 178);        // 0, 0, 178
     const auto HighWhite = Scalar(180, 77, 255);    // 180, 77, 255
 
     // FindWhiteArea
     Mat WhiteFrame;
-    FindColor(HSVFrame, WhiteFrame, LowWhite, HighWhite);
+    FindColor(InputFrame, WhiteFrame, LowWhite, HighWhite);
 
     // Closing Operation
     auto Element = getStructuringElement(MORPH_RECT, Size(13, 13));
