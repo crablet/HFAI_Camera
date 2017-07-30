@@ -13,7 +13,7 @@ void FindTheGoal(const Mat &InputFrame);
 
 int main()
 {
-    VideoCapture Capture("in.mp4");
+    VideoCapture Capture("OrangeBall.avi");
     while (1)
     {
         Mat Frame;
@@ -26,12 +26,16 @@ int main()
 
         Initalize(Frame);   // Could I just work on the HSVFrame?
 
-        // To find white lines.
-        FindWhiteLines(Frame);
-        FindTheGoal(Frame);
+        //// To find white lines.
+        //FindWhiteLines(Frame);
+        //FindTheGoal(Frame);
+        Mat OrangeFrame;
+        auto LowOrange = Scalar(5, 150, 100);                   // Note: H * 180, S * 255, V * 255
+        auto HighOrange = Scalar(120, 255, 255);
+        FindColor(Frame, OrangeFrame, LowOrange, HighOrange);
 
-        imshow("In", Frame);
-        waitKey(5);
+        imshow("In", OrangeFrame);
+        waitKey(50);
     }
     waitKey(0);
     return 0;
