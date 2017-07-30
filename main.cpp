@@ -5,10 +5,11 @@
 using namespace std;
 using namespace cv;
 
-inline void ClosingOperation(Mat &In, Mat &Out, const Mat &Element);
-inline void FindColor(Mat &In, Mat &Out, const Scalar &Low, const Scalar &High);
-void FindWhiteLines(Mat &InputFrame);
+inline void ClosingOperation(const Mat &In, Mat &Out, const Mat &Element);
+inline void FindColor(const Mat &In, Mat &Out, const Scalar &Low, const Scalar &High);
+void FindWhiteLines(const Mat &InputFrame);
 inline void Initalize(Mat &Frame);
+void FindTheGoal(const Mat &InputFrame);
 
 int main()
 {
@@ -23,10 +24,11 @@ int main()
             break;
         }
 
-        Initalize(Frame);
+        Initalize(Frame);   // Could I just work on the HSVFrame?
 
         // To find white lines.
         FindWhiteLines(Frame);
+        FindTheGoal(Frame);
 
         imshow("In", Frame);
         waitKey(5);
@@ -35,13 +37,13 @@ int main()
     return 0;
 }
 
-inline void ClosingOperation(Mat &In, Mat &Out, const Mat &Element)
+inline void ClosingOperation(const Mat &In, Mat &Out, const Mat &Element)
 {
     dilate(In, Out, Element);
     erode(In, Out, Element);
 }
 
-inline void FindColor(Mat &In, Mat &Out, const Scalar &Low, const Scalar &High)
+inline void FindColor(const Mat &In, Mat &Out, const Scalar &Low, const Scalar &High)
 {
     inRange(In, Low, High, Out);
 }
@@ -51,7 +53,7 @@ inline void Initalize(Mat &Frame)
     cvtColor(Frame, Frame, COLOR_BGR2HSV);
 }
 
-void FindWhiteLines(Mat &InputFrame)
+void FindWhiteLines(const Mat &InputFrame)
 {
     const auto LowWhite = Scalar(0, 0, 178);        // 0, 0, 178
     const auto HighWhite = Scalar(180, 77, 255);    // 180, 77, 255
@@ -63,7 +65,6 @@ void FindWhiteLines(Mat &InputFrame)
     // Closing Operation
     auto Element = getStructuringElement(MORPH_RECT, Size(13, 13));
     ClosingOperation(WhiteFrame, WhiteFrame, Element);
-
 
     vector<Vec4i> WhiteLines;
     HoughLinesP(WhiteFrame, WhiteLines, 1, CV_PI / 180, 120, 125, 30);
@@ -95,7 +96,7 @@ void FindWhiteLines(Mat &InputFrame)
                 NowY2 = PreY2 * 0.2 + Line[3] * 0.8;
 
                 line(InputFrame, Point(NowX1, NowY1), Point(NowX2, NowY2),
-                    Scalar(124, 255, 255), 3, LINE_AA);
+                    Scalar(0, 0, 255), 3, LINE_AA);
 
                 // Update Pres.
                 PreX1 = NowX1;
@@ -111,71 +112,38 @@ void FindWhiteLines(Mat &InputFrame)
     }
 }
 
+void FindTheGoal(const Mat &InputFrame)
+{
+    // We find the blue area first.
+    auto LowBlue = Scalar(100, 43, 46);
+    auto HighBlue = Scalar(124, 255, 255);
+    Mat BlueFrame;
+    FindColor(InputFrame, BlueFrame, LowBlue, HighBlue);
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Then we improve the image quality.
+    auto Element = getStructuringElement(MORPH_RECT, Size(13, 13));
+    ClosingOperation(BlueFrame, BlueFrame, Element);
 
+    // Find and draw the contour of the goal.
+    vector<vector<Point>> Contours;
+    findContours(BlueFrame, Contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+    Mat Result(InputFrame.size(), CV_8U, Scalar(255));
+    drawContours(Result, Contours, -1, Scalar(0), 3);
 
-//#include <opencv2/opencv.hpp>
-//#include <iostream>
-//
-//using namespace std;
-//using namespace cv;
-//
-//inline void FindColor(Mat &In, Mat &Out, const Scalar &Low, const Scalar &High);
-//inline void ClosingOperation(Mat &In, Mat &Out, const Mat &Element);
-//
-//int main()
-//{
-//    VideoCapture Capture("in.mp4");
-//    while (1)
-//    {
-//        Mat Frame, HSVFrame;
-//        Capture >> Frame;
-//
-//        if (Frame.empty())
-//        {
-//            break;
-//        }
-//
-//        cvtColor(Frame, HSVFrame, COLOR_BGR2HSV);
-//
-//        auto LowBlue = Scalar(100, 43, 46);
-//        auto HighBlue = Scalar(124, 255, 255);
-//        Mat BlueFrame;
-//        FindColor(HSVFrame, BlueFrame, LowBlue, HighBlue);
-//
-//        auto Element = getStructuringElement(MORPH_RECT, Size(13, 13));
-//        ClosingOperation(BlueFrame, BlueFrame, Element);
-//
-//        vector<vector<Point>> Contours;
-//        findContours(BlueFrame, Contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
-//        Mat Result(Frame.size(), CV_8U, Scalar(255));
-//        drawContours(Result, Contours, -1, Scalar(0), 3);
-//
-//        for (const auto &r : Contours)
-//        {
-//            Moments m = moments(r, true);    // True or false?
-//            double AreaOfContour = contourArea(r);
-//            if (AreaOfContour < 50)
-//            {
-//                continue;
-//            }
-//            cout << "(" << m.m10 / m.m00 << ", " << m.m01 / m.m00 << ")" << endl;   // Print middle points.
-//            cout << AreaOfContour << endl;  // Print the area of the contour.
-//        }
-//
-//        imshow("Out", Result);
-//        imshow("In", Frame);
-//        waitKey(5);
-//    }
-//    waitKey(0);
-//    return 0;
-//}
-//
-//
-//
-//inline void ClosingOperation(Mat &In, Mat &Out, const Mat &Element)
-//{
-//    dilate(In, Out, Element);
-//    erode(In, Out, Element);
-//}
+    // Calculte the area and find out the middle points of the goal.
+    for (const auto &r : Contours)
+    {
+        Moments m = moments(r, true);    // True or false?
+        double AreaOfContour = contourArea(r);
+
+        // Filier the noise.
+        if (AreaOfContour < 50)
+        {
+            continue;
+        }
+
+        cout << "(" << m.m10 / m.m00 << ", " << m.m01 / m.m00 << ")" << endl;   // Print middle points.
+        cout << AreaOfContour << endl;  // Print the area of the contour.
+    }
+    imshow("Out", Result);
+}
