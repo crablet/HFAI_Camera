@@ -10,6 +10,7 @@ inline void FindColor(const Mat &In, Mat &Out, const Scalar &Low, const Scalar &
 void FindWhiteLines(const Mat &InputFrame);
 inline void Initalize(Mat &Frame);
 void FindTheGoal(const Mat &InputFrame);
+void FindTheBall(const Mat &InputFrame);
 
 int main()
 {
@@ -29,14 +30,10 @@ int main()
         //// To find white lines.
         //FindWhiteLines(Frame);
         //FindTheGoal(Frame);
-        Mat OrangeFrame;
-        auto LowOrange = Scalar(5, 150, 100);                   // Note: H * 180, S * 255, V * 255
-        auto HighOrange = Scalar(120, 255, 255);
-        FindColor(Frame, OrangeFrame, LowOrange, HighOrange);
-
-        imshow("In", OrangeFrame);
+        FindTheBall(Frame);
         waitKey(50);
     }
+
     waitKey(0);
     return 0;
 }
@@ -149,5 +146,34 @@ void FindTheGoal(const Mat &InputFrame)
         cout << "(" << m.m10 / m.m00 << ", " << m.m01 / m.m00 << ")" << endl;   // Print middle points.
         cout << AreaOfContour << endl;  // Print the area of the contour.
     }
+
     imshow("Out", Result);
+}
+
+void FindTheBall(const Mat &InputFrame)
+{
+    Mat OrangeFrame;
+    auto LowOrange = Scalar(5, 150, 100);                   // Note: H * 180, S * 255, V * 255
+    auto HighOrange = Scalar(120, 255, 255);
+    FindColor(InputFrame, OrangeFrame, LowOrange, HighOrange);
+
+    // Better than ClosingOperation().
+    GaussianBlur(OrangeFrame, OrangeFrame, Size(15, 15), 2, 2);
+
+    vector<Vec3f> Circles;
+    HoughCircles(OrangeFrame, Circles, HOUGH_GRADIENT, 1, 10, 500, 20, 15, 50); // Remained to be modified.
+
+    if (!Circles.empty())
+    {
+        // Draw the circles.
+        for (const auto &r : Circles)
+        {
+            Point Center((r[0]), r[1]);
+            int Radius = r[2];
+            circle(OrangeFrame, Center, 3, Scalar(0, 255, 0), -1);
+            circle(OrangeFrame, Center, Radius, Scalar(155, 50, 255), 3);
+        }
+    }
+
+    imshow("Out", OrangeFrame);
 }
