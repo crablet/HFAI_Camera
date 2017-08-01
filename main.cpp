@@ -1,6 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <cmath>
+#include <limits>
 
 using namespace std;
 using namespace cv;
@@ -56,6 +57,7 @@ inline void Initalize(Mat &Frame)
 
 void FindWhiteLines(const Mat &InputFrame)
 {
+    constexpr int SafeRange = numeric_limits<int>::max() - 2;
     const auto LowWhite = Scalar(0, 0, 178);        // 0, 0, 178
     const auto HighWhite = Scalar(180, 77, 255);    // 180, 77, 255
 
@@ -91,10 +93,10 @@ void FindWhiteLines(const Mat &InputFrame)
             if (Count % 3 == 0) // In order not to print too much lines on the screen.
             {
                 // To aviod the sudden change. But the weighting remains to be modified.
-                NowX1 = PreX1 * 0.2 + Line[0] * 0.8;
-                NowY1 = PreY1 * 0.2 + Line[1] * 0.8;
-                NowX2 = PreX2 * 0.2 + Line[2] * 0.8;
-                NowY2 = PreY2 * 0.2 + Line[3] * 0.8;
+                NowX1 = PreX1 * 0.25 + Line[0] * 0.75;
+                NowY1 = PreY1 * 0.25 + Line[1] * 0.75;
+                NowX2 = PreX2 * 0.25 + Line[2] * 0.75;
+                NowY2 = PreY2 * 0.25 + Line[3] * 0.75;
 
                 line(InputFrame, Point(NowX1, NowY1), Point(NowX2, NowY2),
                     Scalar(0, 0, 255), 3, LINE_AA);
@@ -105,7 +107,7 @@ void FindWhiteLines(const Mat &InputFrame)
                 PreY1 = NowY1;
                 PreY2 = NowY2;
             }
-            else if (Count > 30000) // To avoid the overflow.
+            else if (Count > SafeRange) // To avoid the overflow.
             {
                 Count = 0;
             }
