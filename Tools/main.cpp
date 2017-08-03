@@ -7,6 +7,7 @@ using namespace std;
 
 Mat SrcImage, MaskImage;
 Point PrevPt(-1, -1);
+vector<Point> Points;
 
 static void OnMouseHandle(int event, int x, int y, int flags, void*);
 
@@ -41,6 +42,7 @@ static void OnMouseHandle(int event, int x, int y, int flags, void*)
     if (event == EVENT_LBUTTONUP || !(flags & EVENT_FLAG_LBUTTON))
     {
         PrevPt = Point(-1, -1);
+        Points.clear();
     }
     else if (event == EVENT_LBUTTONDOWN)
     {
@@ -53,10 +55,19 @@ static void OnMouseHandle(int event, int x, int y, int flags, void*)
         {
             PrevPt = Now;
         }
+        Points.push_back(Point(x, y));
         line(MaskImage, PrevPt, Now, Scalar::all(255), 5);
         line(SrcImage, PrevPt, Now, Scalar::all(255), 5);
         PrevPt = Now;
         imshow("In", SrcImage);
+        for (size_t i = 0; i < Points.size(); ++i)
+        {
+            if (i > 0 && i < Points.size() - 2 && Points[i] == Point(x, y))
+            {
+                cout << Points[i] << " " << Point(x, y) << endl;
+                return; // Do something.
+            }
+        }
     }
 }
 
