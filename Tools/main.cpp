@@ -5,36 +5,59 @@
 using namespace cv;
 using namespace std;
 
-void OnMouse(int event, int x, int y, int flags, void *param);
-bool Flag = true;
-int X = 0, Y = 0;
 vector<Point> Points;
+bool Flag = false;
+
+void OnMouseHandle(int event, int x, int y, int flags, void *param);
 
 int main()
 {
-    Mat Image = imread("1.jpg");
+    Mat SrcImage = imread("1.jpg");
+    Mat TempImage;
+    SrcImage.copyTo(TempImage);
+
     namedWindow("In");
-    setMouseCallback("In", OnMouse);
-    imshow("In", Image);
+    setMouseCallback("In", OnMouseHandle, &SrcImage);
+
     while (1)
     {
+        SrcImage.copyTo(TempImage);
+        imshow("In", TempImage);
         if (waitKey(0))
             break;
-    }
-    for (size_t i = 0; i < Points.size(); ++i)
-    {
-        //cout << Points[i].x << " " << Points[i].y << endl;
-        if (i > 0 && Points[i].x == Points[0].x && Points[i].y == Points[0].y)
-            cout << "Get!" << endl;
     }
     waitKey(0);
     return 0;
 }
 
-void OnMouse(int event, int x, int y, int flags, void *param)
+void OnMouseHandle(int event, int x, int y, int flags, void *param)
 {
-    if (flags == EVENT_FLAG_LBUTTON)
-        Points.push_back(Point(x, y));
-    //if (!Points.empty() && Points[0] == Points[Points.size() - 1])
-    //    return;
+    Mat &Image = *(Mat*)param;
+    switch (event)
+    {
+    case EVENT_LBUTTONDOWN:
+        Flag = true;
+        break;
+    case EVENT_LBUTTONUP:
+        Flag = false;
+        Points.clear();
+        break;
+    case EVENT_MOUSEMOVE:
+        if (Flag)
+        {
+            Points.push_back(Point(x, y));
+            cout << x << " " << y << endl;
+            for (size_t i = 0; i < Points.size() - 2; ++i)
+            {
+                if (Points[i] == Point(x, y))
+                {
+                    cout << "Get!" << endl;
+                    break;
+                }
+            }
+        }
+        break;
+    default:
+        break;
+    }
 }
