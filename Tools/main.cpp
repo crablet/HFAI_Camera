@@ -1,4 +1,5 @@
-#include <opencv2/opencv.hpp>  
+#include <opencv2/opencv.hpp>
+#include <iostream>
 
 using namespace std;
 using namespace cv;
@@ -36,20 +37,25 @@ void OnMouseHandle(int event, int x, int y, int flags, void*)
     {
         floodFill(MaskImage, Point(x, y), Scalar(0)); // Fill the mask template.
                                                       // So where you click will result in contrary results.
-        SrcImage.copyTo(DstImage, MaskImage);                   
+        SrcImage.copyTo(DstImage, MaskImage);
         imshow("DstImage", DstImage);
+
         Mat_<Vec3b> TempDstImage;
         cvtColor(DstImage, TempDstImage, COLOR_BGR2HSV);
+
         vector<int> H, S, V;
         for (const auto &r : TempDstImage)
         {
             if (r[0] != 0 && r[1] != 0 && r[2] != 0)
             {
+                // Store HSVs.
                 H.push_back(r[0]);
                 S.push_back(r[1]);
                 V.push_back(r[2]);
             }
         }
+
+        // Sort and find LowHSV and HighHSV.
         sort(H.begin(), H.end());
         sort(S.begin(), S.end());
         sort(V.begin(), V.end());
