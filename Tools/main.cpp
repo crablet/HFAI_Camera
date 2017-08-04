@@ -4,7 +4,7 @@ using namespace std;
 using namespace cv;
 
 Point PrevPt(-1, -1);
-Mat SrcImage, MaskImage, DstImage;
+Mat SrcImage, DstImage, MaskImage;
 
 void OnMouseHandle(int event, int x, int y, int flags, void*)
 {
@@ -38,13 +38,30 @@ void OnMouseHandle(int event, int x, int y, int flags, void*)
                                                       // So where you click will result in contrary results.
         SrcImage.copyTo(DstImage, MaskImage);                   
         imshow("DstImage", DstImage);
+        Mat_<Vec3b> TempDstImage;
+        cvtColor(DstImage, TempDstImage, COLOR_BGR2HSV);
+        vector<int> H, S, V;
+        for (const auto &r : TempDstImage)
+        {
+            if (r[0] != 0 && r[1] != 0 && r[2] != 0)
+            {
+                H.push_back(r[0]);
+                S.push_back(r[1]);
+                V.push_back(r[2]);
+            }
+        }
+        sort(H.begin(), H.end());
+        sort(S.begin(), S.end());
+        sort(V.begin(), V.end());
+        cout << "LowHSV: (" << H[0] << ", " << S[0] << ", " << V[0] << ")" << endl;
+        cout << "HighHSV: (" << H[H.size() - 1] << ", " << S[S.size() - 1] << ", " << V[V.size() - 1] << ")" << endl;
     }
 
 }
 
 int main()
 {
-    SrcImage = imread("1.jpg");
+    SrcImage = imread("2.jpg");
 
     // Set the mask template white. 
     MaskImage.create(SrcImage.rows, SrcImage.cols, CV_8U);
