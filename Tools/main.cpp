@@ -44,6 +44,9 @@ void OnMouseHandle(int event, int x, int y, int flags, void*)
         cvtColor(DstImage, TempDstImage, COLOR_BGR2HSV);
 
         vector<int> H, S, V;
+        H.reserve(8192);
+        S.reserve(8192);
+        V.reserve(8192);
         for (const auto &r : TempDstImage)
         {
             if (r[0] != 0 && r[1] != 0 && r[2] != 0)
@@ -59,8 +62,8 @@ void OnMouseHandle(int event, int x, int y, int flags, void*)
         sort(H.begin(), H.end());
         sort(S.begin(), S.end());
         sort(V.begin(), V.end());
-        cout << "LowHSV: (" << H[0] << ", " << S[0] << ", " << V[0] << ")" << endl;
-        cout << "HighHSV: (" << H[H.size() - 1] << ", " << S[S.size() - 1] << ", " << V[V.size() - 1] << ")" << endl;
+        cout << "LowHSV: (" << H.front() << ", " << S.front() << ", " << V.front() << ")" << endl;
+        cout << "HighHSV: (" << H.back() << ", " << S.back() << ", " << V.back() << ")" << endl;
     }
 
 }

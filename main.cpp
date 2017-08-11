@@ -28,9 +28,9 @@ int main()
 
         Initalize(Frame);   // Could I just work on the HSVFrame?
 
-        //// To find white lines.
-        //FindWhiteLines(Frame);
-        //FindTheGoal(Frame);
+                            //// To find white lines.
+                            //FindWhiteLines(Frame);
+                            //FindTheGoal(Frame);
         FindTheBall(Frame);
         waitKey(50);
     }
@@ -61,7 +61,7 @@ void FindWhiteLines(const Mat &InputFrame)
     const auto LowWhite = Scalar(0, 0, 178);        // 0, 0, 178
     const auto HighWhite = Scalar(180, 77, 255);    // 180, 77, 255
 
-    // FindWhiteArea
+                                                    // FindWhiteArea
     Mat WhiteFrame;
     FindColor(InputFrame, WhiteFrame, LowWhite, HighWhite);
 
@@ -155,8 +155,8 @@ void FindTheGoal(const Mat &InputFrame)
 void FindTheBall(const Mat &InputFrame)
 {
     Mat OrangeFrame;
-    auto LowOrange = Scalar(5, 150, 100);                   // Note: H * 180, S * 255, V * 255
-    auto HighOrange = Scalar(120, 255, 255);
+    auto LowOrange = Scalar(5, 120, 107);                   // Note: H * 180, S * 255, V * 255
+    auto HighOrange = Scalar(14, 236, 210);
     FindColor(InputFrame, OrangeFrame, LowOrange, HighOrange);
 
     // Better than ClosingOperation().
